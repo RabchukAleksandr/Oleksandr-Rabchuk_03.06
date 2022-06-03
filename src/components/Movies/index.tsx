@@ -1,31 +1,69 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useId, useState} from 'react';
 import {useDispatch, useSelector} from "react-redux";
-import {fetchMovies, addToFavorites} from "../../store/movies";
+import {fetchMovies, toggleFavorites} from "../../store/movies";
 import {AppDispatch, RootState} from "../../store";
 import {Movie} from "../../store/movies/types";
+import {ReactComponent as Grid} from "../../assets/grid.svg";
+import {ReactComponent as List} from "../../assets/list.svg";
+import MovieGridItem from "../unknown/MovieGridItem";
+
+// @ts-ignore
+import styles from './styles.module.css'
+import FavoriteList from "../FavoriteList";
+import classNames from "classnames";
+import MovieListItem from "../unknown/MovieListItem";
+import Select from "../unknown/Select";
 
 type MoviesProps = {}
 const Movies: React.FC<MoviesProps> = () => {
+    const reactId = useId()
+    const [toggleLayout, setToggleLayout] = useState<boolean>(true);
     const movies = useSelector((state: RootState) => state.moviesReducer.movies)
+    const filteredMovies = useSelector((state: RootState) => state.moviesReducer.filteredMovies)
+    const selectedGenre = useSelector((state: RootState) => state.moviesReducer.selectedGenre)
     const dispatch = useDispatch<AppDispatch>()
 
-    useEffect(()=>{
-        if(movies.length === 0) dispatch(fetchMovies())
-    },[dispatch,movies.length])
+    const renderMovies = selectedGenre === 'All' ? movies : filteredMovies
 
-    const addMovieToFavorites = (id:string) => {
-        dispatch(addToFavorites({id}))
+    useEffect(() => {
+        dispatch(fetchMovies())
+    }, [dispatch])
+
+    const onToggleFavorite = (id: number) => {
+        dispatch(toggleFavorites({id}))
     }
-    console.log(movies)
+
     return (
-        <div>
-            {movies.map((item:Movie) => (
+        <div className={styles.wrapper}>
+            <h1>Movies Gallery</h1>
+            <div className={styles.top}>
                 <div>
-                    {item.name}
-                    {item.favorite && 'favorite'}
-                    <button onClick={() => addMovieToFavorites(item.id)}> Add to favorites</button>
+                    <div>Select genre:</div>
+                    <Select/>
                 </div>
-            ))}
+                <div>
+                    <div>View as:</div>
+                    <Grid onClick={() => !toggleLayout && setToggleLayout(!toggleLayout)}
+                          className={classNames(styles.layout, {[styles.activeLayout]: toggleLayout})}/>
+                    <List onClick={() => toggleLayout && setToggleLayout(!toggleLayout)}
+                          className={classNames(styles.layout, {[styles.activeLayout]: !toggleLayout})}/>
+                </div>
+            </div>
+            <div className={styles.container}>
+                {toggleLayout ?
+                    (<div className={styles.moviesGridContainer}>
+                        {renderMovies?.map(({img, name, year, favorite, id}: Movie) => (
+                            <MovieGridItem id={id} img={img} name={name} year={year} favorite={favorite}
+                                           addToFavorite={onToggleFavorite} key={id + reactId}/>
+                        ))}
+                    </div>) :
+                    (<div className={styles.moviesListContainer}>
+                        {renderMovies?.map((movie: Movie) => (
+                            <MovieListItem {...movie} onToggle={onToggleFavorite}/>))}
+                    </div>)
+                }
+                <FavoriteList movies={movies}/>
+            </div>
         </div>
     );
 };
