@@ -13,11 +13,14 @@ import FavoriteList from "../FavoriteList";
 import classNames from "classnames";
 import MovieListItem from "../unknown/MovieListItem";
 import Select from "../unknown/Select";
+import Modal from "../unknown/Modal/Modal";
 
 type MoviesProps = {}
 const Movies: React.FC<MoviesProps> = () => {
     const reactId = useId()
     const [toggleLayout, setToggleLayout] = useState<boolean>(true);
+    const [showModal, setShowModal] = useState<boolean>(false);
+    const [activeItem, setActiveItem] = useState<number | null>(null);
     const movies = useSelector((state: RootState) => state.moviesReducer.movies)
     const filteredMovies = useSelector((state: RootState) => state.moviesReducer.filteredMovies)
     const selectedGenre = useSelector((state: RootState) => state.moviesReducer.selectedGenre)
@@ -29,12 +32,21 @@ const Movies: React.FC<MoviesProps> = () => {
         dispatch(fetchMovies())
     }, [dispatch])
 
+
+
     const onToggleFavorite = (id: number) => {
         dispatch(toggleFavorites({id}))
+        console.log('works')
+    }
+
+    const onShowModal = (id:number) => {
+        setActiveItem(id)
+        setShowModal(true)
     }
 
     return (
         <div className={styles.wrapper}>
+            <Modal activeItem={activeItem} showModal={showModal} setShowModal={() => setShowModal(!showModal)} addToFavorite={onToggleFavorite}/>
             <h1>Movies Gallery</h1>
             <div className={styles.top}>
                 <div>
@@ -54,12 +66,12 @@ const Movies: React.FC<MoviesProps> = () => {
                     (<div className={styles.moviesGridContainer}>
                         {renderMovies?.map(({img, name, year, favorite, id}: Movie) => (
                             <MovieGridItem id={id} img={img} name={name} year={year} favorite={favorite}
-                                           addToFavorite={onToggleFavorite} key={id + reactId}/>
+                                           addToFavorite={onToggleFavorite} key={id + reactId} onSelect={onShowModal}/>
                         ))}
                     </div>) :
                     (<div className={styles.moviesListContainer}>
                         {renderMovies?.map((movie: Movie) => (
-                            <MovieListItem {...movie} onToggle={onToggleFavorite}/>))}
+                            <MovieListItem {...movie} onToggle={onToggleFavorite} onSelect={onShowModal}/>))}
                     </div>)
                 }
                 <FavoriteList movies={movies}/>

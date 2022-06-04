@@ -24,7 +24,9 @@
     flex-direction: row;
     position: relative;
 }
-
+.container :hover{
+    cursor: pointer;
+}
 .container img {
     display: block;
     max-width:230px;

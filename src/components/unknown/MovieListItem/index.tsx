@@ -7,7 +7,7 @@ import styles from './styles.module.css'
 import classNames from "classnames";
 
 
-type MovieListItemProps = Omit<Movie, 'director' | 'starring'> & { onToggle: (id: number) => void }
+type MovieListItemProps = Omit<Movie, 'director' | 'starring'> & { onToggle: (id: number) => void,  onSelect:  (id: number) => void }
 
 
 const MovieListItem: React.FC<MovieListItemProps> = ({img, genres, description, id, favorite, name, year, onToggle}) => {
@@ -23,7 +23,10 @@ const MovieListItem: React.FC<MovieListItemProps> = ({img, genres, description, 
                 <div className={styles.description}>{description}</div>
                 <div className={styles.genres}>{genres.map(genre => (<div className={styles.genre}>{genre}</div>))}</div>
             </div>
-            <Star className={classNames(styles.star,{[styles.favorite]: favorite})} onClick={() => onToggle(id)}/>
+            <Star className={classNames(styles.star,{[styles.favorite]: favorite})} onClick={(e) => {
+                e.stopPropagation()
+                onToggle(id)
+            }}/>
         </div>
     );
 };
